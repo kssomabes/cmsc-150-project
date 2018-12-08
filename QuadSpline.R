@@ -1,7 +1,17 @@
 
 ~source("Gauss.R")
 
-QuadSpline <- function(ind_vect, dep_vect){
+CheckInterval <- function(min, max, toCheck){
+  # this function checks whether toCheck is in the range of min and max
+  
+  if (min < toCheck && max > toCheck){
+    return (TRUE)
+  }
+  
+  return (FALSE)
+}
+
+QuadSpline <- function(ind_vect, dep_vect, givenX){
   # n + 1 data points; n interval
   # 3 unknowns for every interval - 3n unknowns in the system 
   # 3n unknowns = generate 3n equations 
@@ -9,6 +19,23 @@ QuadSpline <- function(ind_vect, dep_vect){
   if (length(ind_vect) != length(dep_vect)){
     return (NA)
   }
+  
+  max_rng_ind = length(ind_vect)-1
+  
+  imax_ind = 0
+  imin_ind = 0
+  
+  for (i in 1:max_rng_ind){
+    inRange = CheckInterval(ind_vect[i], ind_vect[i+1], givenX)
+    
+    if (inRange == TRUE){
+      imin_ind = i
+      imax_ind = i+1
+      break
+    }
+  }
+  
+  if (imax_ind == 0 && imin_ind == 0) return(NA)
   
   # n is the intervals (number of data points - 1) 
   dp_n = length(ind_vect)
@@ -23,7 +50,7 @@ QuadSpline <- function(ind_vect, dep_vect){
   before_matrix = matrix(nrow=3*n-1, ncol=3*n, byrow = FALSE)
   before_matrix[] = 0L
   
-  print(paste("Intervals: ", n))
+  # print(paste("Intervals: ", n))
   
   # padding in n because of 1-based indexing
   padded_len = n+1
@@ -43,6 +70,7 @@ QuadSpline <- function(ind_vect, dep_vect){
         before_matrix[i-2, a:b+1] = c(ind_vect[i-1]^2, ind_vect[i-1], 1)
         before_matrix[i-2, ncol(before_matrix)] = dep_vect[i-1]
       }
+      
       equation_ctr = equation_ctr + 1
       
       c = i+2+1
@@ -62,9 +90,6 @@ QuadSpline <- function(ind_vect, dep_vect){
       }
       
       equation_ctr = equation_ctr + 1
-      
-      
-      
   }
   
   # Condition 2 - First and last functions must pass through the end points
@@ -79,11 +104,27 @@ QuadSpline <- function(ind_vect, dep_vect){
   equation_ctr = equation_ctr + 1
 
   result = GaussJordan(before_matrix) 
+  # result$solutionSet holds a1, b1, c1 and so on
   
-  return (result)
+  ss_ind = 1
+  for (i in 1:n){
+    equations[i] = paste("function (x) ", result$solutionSet[ss_ind], "*x^2 +", result$solutionSet[ss_ind+1], "*x +", result$solutionSet[ss_ind+2])
+    ss_ind = ss_ind + 3
+  }
+  
+  # get the imin_ind th equation 
+  
+  eval_eqn = eval(parse(text = equations[imin_ind]))
+  value  = eval_eqn(givenX)
+  
+  return (list(finalMatrix = result$matrix, solutionSet = result$solutionSet, value = value))
 }
 
 x = c(1.6, 2, 2.5)
 y = c(2, 8, 14)
-given = data.frame(x, y)
-equations = QuadSpline(given$x, given$y)
+given = data.frame(x=x, y=y)
+
+given = given[order(given$x),]
+
+givenX = 2.2 
+QSI = QuadSpline(given$x, given$y, givenX)
