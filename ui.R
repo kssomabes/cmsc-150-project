@@ -1,31 +1,59 @@
 # http://shiny.rstudio.com/gallery/upload-file.html
 
 fluidPage(
-  titlePanel("Uploading Files"),
-  sidebarLayout(
-    sidebarPanel(
-      fileInput('file1', 'Choose file to upload',
-                accept = c(
-                  'text/csv',
-                  'text/comma-separated-values',
-                  'text/tab-separated-values',
-                  'text/plain',
-                  '.csv',
-                  '.tsv'
-                )
-      ),
-      tags$hr(),
-      textInput("toEstimate", "Caption", "Value to estimate"),
-      verbatimTextOutput("textField"),
-      p('If you want a sample .csv or .tsv file to upload,',
-        'you can first download the sample',
-        a(href = 'mtcars.csv', 'mtcars.csv'), 'or',
-        a(href = 'pressure.tsv', 'pressure.tsv'),
-        'files, and then try uploading them.'
-      )
-    ),
-    mainPanel(
-      tableOutput('contents')
-    )
+  titlePanel("CMSC 150 Project"),
+  tabsetPanel(type = "tabs",
+              
+              # TAB PANEL FOR QSI
+              tabPanel("Quadractic Spline Interpolation", 
+                       
+                       # INPUT (QSI)
+                       sidebarPanel(
+                         tags$hr(),
+                         fileInput('datafile', 'Choose file to upload',
+                                   accept = c(
+                                     'text/csv',
+                                     'text/comma-separated-values',
+                                     '.csv'
+                                   )
+                         ),
+                         tags$hr(),
+                         numericInput("toEstimate", 
+                                      "Evaluate at:", 
+                                      value = 1),
+                         checkboxInput("checkboxQSI", "Show results", FALSE)
+                       ),
+                       
+                       # OUTPUT (QSI)
+                       mainPanel(
+                         tableOutput("QSITable"),
+                         tableOutput("QSIValue")
+                       )
+                      
+              ),
+              
+              # TAB PANEL FOR POLYNOMIAL REGRESSION
+              tabPanel("Polynomial Regression",
+                       # INPUT (PR)
+                       sidebarPanel(
+                         tags$hr(),
+                         fileInput('datafile2', 'Choose file to upload',
+                                   accept = c(
+                                     'text/csv',
+                                     'text/comma-separated-values',
+                                     '.csv'
+                                   )
+                         ),
+                         tags$hr(),
+                         numericInput("degree", 
+                                      "Enter degree:", 
+                                      value = 1),
+                         checkboxInput("checkboxPR", "Show results", FALSE)
+                       ),
+                       mainPanel(
+                         tableOutput("PRTable"),
+                         textOutput("PREquation")
+                       )
+              )
   )
 )

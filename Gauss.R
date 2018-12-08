@@ -14,6 +14,8 @@ ToSort <- function(var_length, curr_index, matrix){
     i = start
     while (i <= var_length){
       # print(paste(i, " ", curr_index))
+      print(i)
+      print(curr_index)
       if (abs(matrix[i, curr_index] > max_value)){
         max_index = i
       }
@@ -93,15 +95,15 @@ GaussJordan <- function(matrix){
   return(list(matrix=matrix, solutionSet=solutionSet))
 }
 
-Gaussian <- function(variables, matrix){
+Gaussian <- function(matrix){
   
   # This loop gets the upper triangular matrix
   
-  i_length = length(variables)-1
+  # i_length = length(variables)-1
   
-  for (i in 1:i_length){
+  for (i in 1:nrow(matrix)){
     
-    new_i = ToSort(length(variables), i, matrix)
+    new_i = ToSort(ncol(matrix), i, matrix)
     if (new_i != i){
       # must be sorted since the largest is not equal to curr i
       matrix = SwapRows(i, new_i, matrix)
@@ -112,7 +114,7 @@ Gaussian <- function(variables, matrix){
     
     j_start = i+1
   
-    for (j in j_start:length(variables)){
+    for (j in j_start:ncol(matrix)){
 
       # get the value to be 0 
       valueToBeZero = matrix[j, i]
@@ -135,11 +137,11 @@ Gaussian <- function(variables, matrix){
   #x[i] = (b[i] - sum(a[i, i+1:n] * x[i+1:n])) / a[i,i]
   
   # declare the vector where the answers will be stored 
-  solutionSet = c(1:length(variables))
+  solutionSet = c(1:ncol(matrix))
   solutionSet[] = 0L # https://stackoverflow.com/a/28031687
   # get the index of the RHS 
-  RHS = length(variables) + 1
-  for (i in length(variables):1){
+  RHS = nrow(matrix)
+  for (i in ncol(matrix):1){
     
     # get the RHS element
     RHS_element = matrix[i, RHS]
@@ -157,5 +159,5 @@ Gaussian <- function(variables, matrix){
     
   }
   
-  return(list(variables=variables, matrix=matrix, solutionSet=solutionSet))
+  return(list(matrix=matrix, solutionSet=solutionSet))
 }

@@ -1,5 +1,5 @@
 
-~source("Gauss.R")
+source("Gauss.R")
 
 CheckInterval <- function(min, max, toCheck){
   # this function checks whether toCheck is in the range of min and max
@@ -11,13 +11,22 @@ CheckInterval <- function(min, max, toCheck){
   return (FALSE)
 }
 
-QuadSpline <- function(ind_vect, dep_vect, givenX){
+QuadSpline <<- function(x, y, givenX){
+  
+  given = data.frame(x=x, y=y)
+  
+  # sort by x 
+  given = given[order(given$x),]
+  
+  ind_vect = given$x
+  dep_vect = given$y
+  
   # n + 1 data points; n interval
   # 3 unknowns for every interval - 3n unknowns in the system 
   # 3n unknowns = generate 3n equations 
   
   if (length(ind_vect) != length(dep_vect)){
-    return (NA)
+    return (NULL)
   }
   
   max_rng_ind = length(ind_vect)-1
@@ -59,37 +68,31 @@ QuadSpline <- function(ind_vect, dep_vect, givenX){
     # the variable subscripts will be -2 and -1 due to the padding
     # first column will always be 0 
     # Condition 1 - interior knots
-    
       a = i-2 
       b = i-1
       
       if (a == 1){
-        before_matrix[i-2, a:b] = c(ind_vect[i-1], 1)
-        before_matrix[i-2, ncol(before_matrix)] = dep_vect[i-1]
+        # only occupy the first two columns since a1 = 0 / omitted in the table
+        col_in_plus = col_in+1
+        before_matrix[equation_ctr, col_in:col_in_plus] = c(ind_vect[i-1], 1)
+        before_matrix[equation_ctr, ncol(before_matrix)] = dep_vect[i-1]
+        col_in = col_in + 2
       }else {
-        before_matrix[i-2, a:b+1] = c(ind_vect[i-1]^2, ind_vect[i-1], 1)
-        before_matrix[i-2, ncol(before_matrix)] = dep_vect[i-1]
+        b = b+1
+        col_in_plus = col_in+2
+        before_matrix[equation_ctr, col_in:col_in_plus] = c(ind_vect[i-1]^2, ind_vect[i-1], 1)
+        before_matrix[equation_ctr, ncol(before_matrix)] = dep_vect[i-1]
+        col_in = col_in + 3
       }
       
       equation_ctr = equation_ctr + 1
       
-      c = i+2+1
-      before_matrix[i-1, i:c] = c(ind_vect[i-1]^2, ind_vect[i-1], 1, dep_vect[i-1])
+      col_in_plus = col_in + 2 
+      before_matrix[equation_ctr, col_in:col_in_plus] = c(ind_vect[i-1]^2, ind_vect[i-1], 1)
+      before_matrix[equation_ctr, ncol(before_matrix)] = dep_vect[i-1]
+  
       equation_ctr = equation_ctr + 1
-      
-    
-    # Condition 3 
-      d = i+2
-      e = i-1 
-      if (a == 1){
-        # skip the first column
-        before_matrix[i, a:d] = c(1, 0, -2*ind_vect[i-1], -1, 0)
-      }else {
-        d = d + 1
-        before_matrix[i, a:d] = c(2*ind_vect[i-1], 1, 0, -2*ind_vect[i-1], -1, 0) 
-      }
-      
-      equation_ctr = equation_ctr + 1
+
   }
   
   # Condition 2 - First and last functions must pass through the end points
@@ -100,9 +103,35 @@ QuadSpline <- function(ind_vect, dep_vect, givenX){
   start_c3 = ncol(before_matrix) - 3
   before_matrix[equation_ctr, start_c3:ncol(before_matrix)] = c(ind_vect[dp_n]^2, ind_vect[dp_n], 1, dep_vect[dp_n])
 
-  print(before_matrix)
   equation_ctr = equation_ctr + 1
+  
+  col_ind = 1
+  for (i in 3:padded_len){
+    # Condition 3 
+    
+    a = i-2 
+    d = i+1
+    e = i-1 
+  
+    if (a == 1){
+      # skip the first column
+      col_ind_plus = col_ind + 3
+      before_matrix[equation_ctr, col_ind:col_ind_plus] = c(1, 0, -2*ind_vect[i-1], -1)
+      before_matrix[equation_ctr, ncol(before_matrix)] = 0
+      col_ind = col_ind + 2
+    }else {
+      d = d + 1
+      col_ind_plus= col_ind + 4
+      before_matrix[equation_ctr, col_ind:col_ind_plus] = c(2*ind_vect[i-1], 1, 0, -2*ind_vect[i-1], -1) 
+      before_matrix[equation_ctr, ncol(before_matrix)] = 0       
+      col_ind = col_ind + 3
+    }
+    
+    equation_ctr = equation_ctr + 1
+  }
 
+  # print(before_matrix)
+  
   result = GaussJordan(before_matrix) 
   # result$solutionSet holds a1, b1, c1 and so on
   
@@ -116,15 +145,15 @@ QuadSpline <- function(ind_vect, dep_vect, givenX){
   
   eval_eqn = eval(parse(text = equations[imin_ind]))
   value  = eval_eqn(givenX)
-  
-  return (list(finalMatrix = result$matrix, solutionSet = result$solutionSet, value = value))
+  # print(equations)
+  return (list(equations = equations, finalMatrix = result$matrix, solutionSet = result$solutionSet, value = value))
 }
-
-x = c(1.6, 2, 2.5)
-y = c(2, 8, 14)
+# 
+x = c(3, 4.5, 7, 9)
+y = c(2.5, 1, 2.5, 0.5)
 given = data.frame(x=x, y=y)
 
 given = given[order(given$x),]
 
-givenX = 2.2 
+givenX = 3.2
 QSI = QuadSpline(given$x, given$y, givenX)
