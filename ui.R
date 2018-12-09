@@ -27,7 +27,8 @@ fluidPage(
                        # OUTPUT (QSI)
                        mainPanel(
                          tableOutput("QSITable"),
-                         tableOutput("QSIValue")
+                         tableOutput("QSIValue"),
+                         tableOutput("QSIEquations")
                        )
                       
               ),
@@ -52,8 +53,11 @@ fluidPage(
                        ),
                        mainPanel(
                          tableOutput("PRTable"),
-                         textOutput("PREquation")
+                         plotOutput("PRGraph")
                        )
-              )
+              ),
+              
+              # TAB PANEL FOR SIMPLEX
+              tabPanel("Simplex Implementation")
   )
 )

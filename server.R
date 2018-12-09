@@ -6,6 +6,7 @@ options(shiny.maxRequestSize = 9*1024^2)
 source("Gauss.R")
 source("QuadSpline.R")
 source("PolyReg.R")
+ltsymbol<-"\u2265"
 
 function(input, output) {
 
@@ -34,6 +35,13 @@ function(input, output) {
     
     output = matrix(nrow = length(QSIRes$equations), ncol = 2, dimnames=list(c(), c("Interval", "Function")))
     
+    for (i in 1:nrow(output)){
+      minX = values[i,1]
+      maxX = values[i+1,1]
+      output[i,1] = paste(minX, "x", "<=", "x", maxX) 
+      output[i,2] = QSIRes$equations[[i]]
+    }
+    
     if (input$checkboxQSI) return(output)
     else return(NULL)
   })
@@ -53,7 +61,7 @@ function(input, output) {
       # Some error handling
       return(NULL)
     }
-    
+
     output = matrix(nrow=1, ncol=2, byrow = TRUE, dimnames = list(c(), c("x", "f(x)")))
     output[1,1] = toEstimate
     output[1,2] = QSIRes$value
@@ -67,20 +75,20 @@ function(input, output) {
   output$PRTable <- renderTable({
     req(input$datafile2)
     values = read.table(input$datafile2$datapath, header = TRUE, sep =",")
-    values
+    return(values)
   })
   
-  output$PREquation <- renderText({
+  output$PRGraph <- renderPlot({
     req(input$datafile2)
     req(input$degree)
-    
-    if (is.null(input$datafile2) && is.null(input$toEstimate)) return (NULL)
-    
+
     degree = input$degree
+    if (is.null(input$datafile2) && is.null(degree)) return (NULL)
+    
+    
     values = read.table(input$datafile2$datapath, header = TRUE, sep = ",")
     result <- PolyReg(values[,1], values[,2], degree)
-    
-    
-    print(result)
+    if (input$checkboxPR) return(result)
+    else return(NULL)
   })
 }

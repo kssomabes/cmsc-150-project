@@ -16,8 +16,8 @@ PolyReg <<- function(ind_vect, dep_vect, degree){
   }
   
   data_points = data.frame(ind_vect, dep_vect)
-  colnames(data_points)[1] = "temp"
-  colnames(data_points)[2] = "yield"
+  colnames(data_points)[1] = "x"
+  colnames(data_points)[2] = "y"
   
   # check if the number of data points are enough for the polynomial degree
   # check if the value of n is less than 1
@@ -46,8 +46,8 @@ PolyReg <<- function(ind_vect, dep_vect, degree){
       if (j == col_length){
         # formula for constants
         
-        x_copy = data_points$temp^constant_ctr
-        y_copy = data_points$yield
+        x_copy = data_points$x^constant_ctr
+        y_copy = data_points$y
         
         before_matrix[i,j] = sum(x_copy * y_copy)
         
@@ -57,7 +57,7 @@ PolyReg <<- function(ind_vect, dep_vect, degree){
         exponent = (i - 1) + (j - 1)
         
         # get all the summation of the data set
-        x_copy = data_points$temp
+        x_copy = data_points$x
         x_copy = x_copy ^ exponent
         before_matrix[i, j] = sum(x_copy)
         
@@ -65,23 +65,25 @@ PolyReg <<- function(ind_vect, dep_vect, degree){
       
     }
   }
+  # print(before_matrix)
+  gaussian = GaussJordan(before_matrix)
   
-  gaussian = Gaussian(before_matrix)
-  
-  print(gaussian)
+  # print(gaussian)
   
   reg_eqn = "function (x)"
   degree_dec = degree
   
   # solutionSet[1] is a[0] * X^0
   
-  print(length(gaussian$solutionSet))
+  # print(length(gaussian$solutionSet))
   
-  for (i in length(gaussian$solutionSet):1){
+  # changed the last index to 2 since the GaussJordan has been padded with the first element
+  # as A1 but the algorithm remained for that function
+  for (i in length(gaussian$solutionSet):2){
     
     reg_eqn = paste(reg_eqn, gaussian$solutionSet[i])
     
-    if (i != 1){
+    if (i != 2){
       reg_eqn = paste(reg_eqn, "* (x^", degree_dec, ")")
       reg_eqn = paste(reg_eqn, "+")
     }
@@ -91,12 +93,12 @@ PolyReg <<- function(ind_vect, dep_vect, degree){
   
   reg_eqn_eval = eval(parse(text = reg_eqn))
   
-  values  = reg_eqn_eval(data_points$temp)
-  print(reg_eqn_eval)
-  
-  plot(data_points$temp, data_points$yield, pch = 20, col = "red", main = "Temp vs. Yield", 
-       xlab = "Temp", ylab = "Yield")
-  lines(data_points$temp, values, col = "green")
+  values  = reg_eqn_eval(data_points$x)
+  # print(reg_eqn_eval)
+
+  plot(data_points$x, data_points$y, pch = 20, col = "red", main = "X vs. Y",
+       xlab = "X", ylab = "Y")
+  lines(data_points$x, values, col = "green")
 }
 
 # temp = c(50, 50, 50, 70, 70, 70, 80, 80, 80, 90, 90, 90, 100, 100, 100)

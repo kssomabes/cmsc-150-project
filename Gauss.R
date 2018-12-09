@@ -14,8 +14,7 @@ ToSort <- function(var_length, curr_index, matrix){
     i = start
     while (i <= var_length){
       # print(paste(i, " ", curr_index))
-      print(i)
-      print(curr_index)
+      # print(paste("i: ", i, " curr: ", curr_index))
       if (abs(matrix[i, curr_index] > max_value)){
         max_index = i
       }
@@ -96,7 +95,7 @@ GaussJordan <- function(matrix){
 }
 
 Gaussian <- function(matrix){
-  
+  print(matrix)
   # This loop gets the upper triangular matrix
   
   # i_length = length(variables)-1
