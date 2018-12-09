@@ -91,4 +91,10 @@ function(input, output) {
     if (input$checkboxPR) return(result)
     else return(NULL)
   })
+  
+  output$simplex <- reactive({
+    if (input$checkboxSimplex) return(NULL)  
+    print("Hi")
+  })
+  
 }

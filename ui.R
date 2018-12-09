@@ -58,6 +58,20 @@ fluidPage(
               ),
               
               # TAB PANEL FOR SIMPLEX
-              tabPanel("Simplex Implementation")
+              tabPanel("Simplex Implementation",
+                       sidebarPanel(
+                         tags$hr(),
+                         numericInput("numVar",
+                                      "Number of variables:",
+                                      value = 1),
+                         numericInput("numConst",
+                                      "Number of constraints:",
+                                      value = 1),
+                         checkboxInput("checkboxSimplex", "Show results", FALSE)
+                       ),
+                       mainPanel(
+                         
+                       )
+              )
   )
 )

@@ -4,7 +4,7 @@ source("Gauss.R")
 CheckInterval <- function(min, max, toCheck){
   # this function checks whether toCheck is in the range of min and max
   
-  if (min < toCheck && max > toCheck){
+  if (min <= toCheck && max >= toCheck){
     return (TRUE)
   }
   
