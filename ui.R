@@ -1,4 +1,5 @@
 # http://shiny.rstudio.com/gallery/upload-file.html
+library(rhandsontable)
 
 fluidPage(
   titlePanel("CMSC 150 Project"),
@@ -61,16 +62,12 @@ fluidPage(
               tabPanel("Simplex Implementation",
                        sidebarPanel(
                          tags$hr(),
-                         numericInput("numVar",
-                                      "Number of variables:",
-                                      value = 1),
-                         numericInput("numConst",
-                                      "Number of constraints:",
-                                      value = 1),
-                         checkboxInput("checkboxSimplex", "Show results", FALSE)
+                         actionButton("actionSimplex", "Solve")
                        ),
                        mainPanel(
-                         
+                          rHandsontableOutput("simplexInputDemand"),
+                          rHandsontableOutput("simplexInputSupply"),
+                          rHandsontableOutput("showInitialTableau")
                        )
               )
   )

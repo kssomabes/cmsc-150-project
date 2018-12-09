@@ -1,12 +1,19 @@
 # By default, the file size limit is 5MB. It can be changed by
 # setting this option. Here we'll raise limit to 9MB.
 # Reference: http://shiny.rstudio.com/gallery/upload-file.html
+library(shiny)
+library(rhandsontable)
+
 options(shiny.maxRequestSize = 9*1024^2)
 
 source("Gauss.R")
 source("QuadSpline.R")
 source("PolyReg.R")
-ltsymbol<-"\u2265"
+
+# Initial data for demands and supply for Simplex method
+
+demandConst <<- matrix(c(180, 80, 200, 160, 220), 1, 5, byrow = TRUE, dimnames = list(c("Demands"), c("S", "SL", "A", "C", "NY")))
+supplyConst <<- matrix(c(310, 10, 8, 6, 5, 4, 260, 6, 5, 4, 3, 6, 280, 3, 4, 5, 5, 9), 3,6, byrow = TRUE, dimnames = list(c("Denver", "Phoenix", "Dallas"), c("Supply", "S", "SL", "A", "C", "NY")))
 
 function(input, output) {
 
@@ -92,9 +99,31 @@ function(input, output) {
     else return(NULL)
   })
   
-  output$simplex <- reactive({
-    if (input$checkboxSimplex) return(NULL)  
-    print("Hi")
+  output$simplexInputDemand <- renderRHandsontable({
+    rhandsontable(demandConst, width = 1000)
   })
   
+  output$simplexInputSupply <- renderRHandsontable({
+    rhandsontable(supplyConst, width = 1000)
+  })
+  
+  actionSimplex <- eventReactive(input$actionSimplex, {
+    demandMatrix <- as.matrix(hot_to_r(input$simplexInputDemand))
+    supplyMatrix <- as.matrix(hot_to_r(input$simplexInputSupply))
+    
+    print(demandMatrix)
+    # print(typeof(demandMatrix))
+    # print(demandMatrix[,1])
+    # print(demandMatrix[1,])
+    print(supplyMatrix)
+    
+    # Objective Function (supplyMatrix[1:3, 2:6])
+    # Number to ship & demand constraints (demandMatrix)
+    # Number to ship & supply constraints (supplyMatrix[1:3, 1])
+  
+  })
+  
+  output$showInitialTableau <- renderRHandsontable({
+    rhandsontable(actionSimplex())
+  })
 }
