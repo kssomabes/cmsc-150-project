@@ -9,6 +9,7 @@ options(shiny.maxRequestSize = 9*1024^2)
 source("Gauss.R")
 source("QuadSpline.R")
 source("PolyReg.R")
+source("Simplex.R")
 
 # Initial data for demands and supply for Simplex method
 
@@ -121,6 +122,8 @@ function(input, output) {
     # Number to ship & demand constraints (demandMatrix)
     # Number to ship & supply constraints (supplyMatrix[1:3, 1])
   
+    initialTab <- Simplex(supplyMatrix[1:3, 2:6], demandMatrix, supplyMatrix[1:3, 1])
+    return(initialTab$x)
   })
   
   output$showInitialTableau <- renderRHandsontable({
