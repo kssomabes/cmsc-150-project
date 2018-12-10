@@ -17,7 +17,7 @@ demandConst <<- matrix(c(180, 80, 200, 160, 220), 1, 5, byrow = TRUE, dimnames =
 supplyConst <<- matrix(c(310, 10, 8, 6, 5, 4, 260, 6, 5, 4, 3, 6, 280, 3, 4, 5, 5, 9), 3,6, byrow = TRUE, dimnames = list(c("Denver", "Phoenix", "Dallas"), c("Supply", "S", "SL", "A", "C", "NY")))
 
 function(input, output) {
-
+  
   # QSI OUTPUTS 
   
   output$QSITable <- renderTable({
@@ -69,12 +69,12 @@ function(input, output) {
       # Some error handling
       return(NULL)
     }
-
+    
     output = matrix(nrow=1, ncol=2, byrow = TRUE, dimnames = list(c(), c("x", "f(x)")))
     output[1,1] = toEstimate
     output[1,2] = QSIRes$value
     
-    if (input$checkboxQSI) return(output)
+    if (input$checkboxPR) return(output)
     else return (NULL)
   })
   
@@ -86,20 +86,48 @@ function(input, output) {
     return(values)
   })
   
-  output$PRGraph <- renderPlot({
+  output$PRValue <- renderTable({
     req(input$datafile2)
     req(input$degree)
-
-    degree = input$degree
-    if (is.null(input$datafile2) && is.null(degree)) return (NULL)
+    req(input$toEstimate2)
     
+    if (is.null(input$datafile2) && is.null(input$toEstimate2)) return (NULL)
+    
+    toEstimate2 = input$toEstimate2
+    degree = input$degree 
     
     values = read.table(input$datafile2$datapath, header = TRUE, sep = ",")
-    result <- PolyReg(values[,1], values[,2], degree)
-    if (input$checkboxPR) return(result)
+    PRRes <- PolyReg(values[,1], values[,2], degree, toEstimate2)
+    
+    if (is.null(PRRes) == TRUE){
+      # Some error handling
+      return(NULL)
+    }
+    
+    output = matrix(nrow=1, ncol=2, byrow = TRUE, dimnames = list(c(), c("x", "f(x)")))
+    output[1,1] = toEstimate2
+    output[1,2] = PRRes$value
+    
+    if (input$checkboxPR) return(output)
+    else return (NULL)
+  })
+  
+  output$PREquation <- renderText({
+    req(input$datafile2)
+    req(input$degree)
+    req(input$toEstimate2)
+    
+    toEstimate2 = input$toEstimate2
+    degree = input$degree
+    if (is.null(input$datafile2) && is.null(degree)) return (NULL)
+
+    values = read.table(input$datafile2$datapath, header = TRUE, sep = ",")
+    result <- PolyReg(values[,1], values[,2], degree, toEstimate2)
+    if (input$checkboxPR) return(result$equation)
     else return(NULL)
   })
   
+  # SIMPLEX OUTPUTS
   output$simplexInputDemand <- renderRHandsontable({
     rhandsontable(demandConst, width = 1000)
   })
@@ -112,21 +140,11 @@ function(input, output) {
     demandMatrix <- as.matrix(hot_to_r(input$simplexInputDemand))
     supplyMatrix <- as.matrix(hot_to_r(input$simplexInputSupply))
     
-    print(demandMatrix)
-    # print(typeof(demandMatrix))
-    # print(demandMatrix[,1])
-    # print(demandMatrix[1,])
-    print(supplyMatrix)
-    
-    # Objective Function (supplyMatrix[1:3, 2:6])
-    # Number to ship & demand constraints (demandMatrix)
-    # Number to ship & supply constraints (supplyMatrix[1:3, 1])
-  
     initialTab <- Simplex(supplyMatrix[1:3, 2:6], demandMatrix, supplyMatrix[1:3, 1])
-    return(initialTab$x)
+    return(initialTab$final_matrix)
   })
   
-  output$showInitialTableau <- renderRHandsontable({
+  output$showFinalTableau <- renderRHandsontable({
     rhandsontable(actionSimplex())
   })
 }

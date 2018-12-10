@@ -27,6 +27,7 @@ fluidPage(
                        
                        # OUTPUT (QSI)
                        mainPanel(
+                         br(),
                          tableOutput("QSITable"),
                          tableOutput("QSIValue"),
                          tableOutput("QSIEquations")
@@ -50,11 +51,16 @@ fluidPage(
                          numericInput("degree", 
                                       "Enter degree:", 
                                       value = 1),
+                         numericInput("toEstimate2", 
+                                      "Evaluate at:", 
+                                      value = 1),
                          checkboxInput("checkboxPR", "Show results", FALSE)
                        ),
                        mainPanel(
+                         br(),
                          tableOutput("PRTable"),
-                         plotOutput("PRGraph")
+                         verbatimTextOutput("PREquation"),
+                         tableOutput("PRValue")
                        )
               ),
               
@@ -62,12 +68,16 @@ fluidPage(
               tabPanel("Simplex Implementation",
                        sidebarPanel(
                          tags$hr(),
+                         checkboxInput("showInitialTab", "Show initial tableau", FALSE),
                          actionButton("actionSimplex", "Solve")
                        ),
                        mainPanel(
+                          br(),
                           rHandsontableOutput("simplexInputDemand"),
+                          br(),
                           rHandsontableOutput("simplexInputSupply"),
-                          rHandsontableOutput("showInitialTableau")
+                          br(),
+                          rHandsontableOutput("showFinalTableau")
                        )
               )
   )

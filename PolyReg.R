@@ -8,7 +8,7 @@
 # Function w solved unknowns
 # Plot data w regression function
 
-PolyReg <<- function(ind_vect, dep_vect, degree){
+PolyReg <<- function(ind_vect, dep_vect, degree, toEval){
   
   # check if the ind_vect has same length with dep_vect
   if (length(ind_vect) != length(dep_vect)){
@@ -92,17 +92,13 @@ PolyReg <<- function(ind_vect, dep_vect, degree){
   }
   
   reg_eqn_eval = eval(parse(text = reg_eqn))
+  value = reg_eqn_eval(toEval)
   
   values  = reg_eqn_eval(data_points$x)
-  # print(reg_eqn_eval)
-
-  plot(data_points$x, data_points$y, pch = 20, col = "red", main = "X vs. Y",
-       xlab = "X", ylab = "Y")
-  lines(data_points$x, values, col = "green")
+  
+  # plot(data_points$x, data_points$y, pch = 20, col = "red", main = "X vs. Y",
+  #      xlab = "X", ylab = "Y")
+  # lines(data_points$x, values, col = "green")
+  
+  return(list(equation = reg_eqn, value = value))
 }
-
-# temp = c(50, 50, 50, 70, 70, 70, 80, 80, 80, 90, 90, 90, 100, 100, 100)
-# yield = c(3.3, 2.8, 2.9, 2.3, 2.6, 2.1, 2.5, 2.9, 2.4, 3.0, 3.1, 2.8, 3.3, 3.5, 3.0)
-# sample = data.frame(temp, yield)
-# 
-# regression = PolynomialRegression(sample$temp, sample$yield, 4)
