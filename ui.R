@@ -1,5 +1,6 @@
 # http://shiny.rstudio.com/gallery/upload-file.html
 library(rhandsontable)
+library(DT)
 
 fluidPage(
   titlePanel("CMSC 150 Project"),
@@ -32,7 +33,7 @@ fluidPage(
                          tableOutput("QSIValue"),
                          tableOutput("QSIEquations")
                        )
-                      
+                       
               ),
               
               # TAB PANEL FOR POLYNOMIAL REGRESSION
@@ -69,15 +70,21 @@ fluidPage(
                        sidebarPanel(
                          tags$hr(),
                          checkboxInput("showInitialTab", "Show initial tableau", FALSE),
-                         actionButton("actionSimplex", "Solve")
+                         actionButton("actionSimplex", "Solve"),
+                         actionButton("showIterations", "Show iterations")
                        ),
                        mainPanel(
-                          br(),
-                          rHandsontableOutput("simplexInputDemand"),
-                          br(),
-                          rHandsontableOutput("simplexInputSupply"),
-                          br(),
-                          rHandsontableOutput("showFinalTableau")
+                         br(),
+                         rHandsontableOutput("simplexInputDemand"),
+                         br(),
+                         rHandsontableOutput("simplexInputSupply"),
+                         br(),
+                         tableOutput("SimplexInitial"),
+                         br(),
+                         # uiOutput("simplexIterations"),
+                         uiOutput("simplexIterations2"),
+                         br(),
+                         rHandsontableOutput("showFinalTableau")
                        )
               )
   )

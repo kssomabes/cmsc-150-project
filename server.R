@@ -3,6 +3,7 @@
 # Reference: http://shiny.rstudio.com/gallery/upload-file.html
 library(shiny)
 library(rhandsontable)
+library(DT)
 
 options(shiny.maxRequestSize = 9*1024^2)
 
@@ -120,7 +121,7 @@ function(input, output) {
     toEstimate2 = input$toEstimate2
     degree = input$degree
     if (is.null(input$datafile2) && is.null(degree)) return (NULL)
-
+    
     values = read.table(input$datafile2$datapath, header = TRUE, sep = ",")
     result <- PolyReg(values[,1], values[,2], degree, toEstimate2)
     if (input$checkboxPR) return(result$equation)
@@ -144,7 +145,61 @@ function(input, output) {
     return(initialTab$final_matrix)
   })
   
+  output$SimplexInitial <- renderTable({
+    if (input$showInitialTab){
+      demandMatrix <- as.matrix(hot_to_r(input$simplexInputDemand))
+      supplyMatrix <- as.matrix(hot_to_r(input$simplexInputSupply))
+      
+      result <- Simplex(supplyMatrix[1:3, 2:6], demandMatrix, supplyMatrix[1:3, 1])
+      return(result$initial_tableau)
+    }return (NULL)
+  })
+  
+  getSimplexIterations <- eventReactive(input$showIterations, {
+    demandMatrix <- as.matrix(hot_to_r(input$simplexInputDemand))
+    supplyMatrix <- as.matrix(hot_to_r(input$simplexInputSupply))
+    
+    result <- Simplex(supplyMatrix[1:3, 2:6], demandMatrix, supplyMatrix[1:3, 1])
+    return(result$matrix_iterations)
+  })
+  
   output$showFinalTableau <- renderRHandsontable({
     rhandsontable(actionSimplex())
   })
+  
+  # output$simplexIterations <- renderUI({
+  #   iter_bs <- getSimplexIterations()
+  #   all_iters <- list()
+  # 
+  #   for (i in 1:length(iter_bs)){
+  #     all_iters[[i]] = DT::renderDataTable({
+  #       iter_bs[[i]]$tableau
+  #     })
+  #   }
+  #   
+  #   # iter_bs2 = list()
+  #   # for (i in 1:length(iter_bs)){
+  #   #   iter_bs2[i] = iter_bs[[i]]$tableau
+  #   # }
+  #   # 
+  #   # render_iters = DT::renderDataTable({
+  #   #   iter_bs2
+  #   # })
+  #   
+  #   
+  #   return(fluidRow(all_iters))
+  # })
+  # 
+  output$simplexIterations2 <- renderUI({
+    iter_bs <- getSimplexIterations()
+    all_iters <- list()
+    
+    for (i in 1:length(iter_bs)){
+      all_iters[[i]] = renderTable(iter_bs[[i]]$tableau)
+    }
+    
+    return(fluidRow(all_iters))
+    
+  })
+  
 }

@@ -18,6 +18,7 @@ Simplex <<- function(objMat, demMat, supMat){
   # Objective Function (supplyMatrix[1:3, 2:6])
   # Number to ship & demand constraints (demandMatrix)
   # Number to ship & supply constraints (supplyMatrix[1:3, 1])
+  big_matrix_iteration = matrix(0, nrow = 9, ncol=25)
   
   init_table = matrix(0, nrow = 9, ncol = 25)
   init_table_iter = 1
@@ -29,7 +30,6 @@ Simplex <<- function(objMat, demMat, supMat){
   # demand constraints have >= inequality sign, multiply by -1 except for slack variable
   for (i in 1:length(demMat)){
     
-    # demC[[i]] = list(rep(0, ncol(init_table))) # initialize list of 0s
     demC[i, ncol(init_table)] = demMat[i] # assign RHS
     
     demC[i,i] = 1
@@ -72,11 +72,14 @@ Simplex <<- function(objMat, demMat, supMat){
   }
   obj_init[1, (ncol(init_table)-1)] = 1 # assign Z
   
+  matrix_iterator = 1
+
   # assign obj_init to initial tableau
   init_table[nrow(init_table), ] = obj_init
   
   matrix2 = init_table
   
+  # PHASE 1: get the most negative RHS - get the TR of negative values in row, get the smallest positive TR
   # checks if there is a negative in the RHS
   ph1cond = any(matrix2[1:8, ncol(matrix2)] < 0)
   iter = 1 
@@ -118,6 +121,15 @@ Simplex <<- function(objMat, demMat, supMat){
       }
       
       matrix2 = modifiedGaussJordan(matrix2, min_index, largest_TR_index)
+      # store matrix state in list
+      # store basic solution of matrix state 
+      b_sol = getBasicSol(matrix2)
+      if (matrix_iterator == 1){
+        big_matrix_iteration = matrix2
+      }else{
+        big_matrix_iteration = rbind(big_matrix_iteration, matrix2)
+      }
+      matrix_iterator = matrix_iterator + 1
     }else break
     ph1cond = any(matrix2[1:8, ncol(matrix2)] < 0)
   }
@@ -142,11 +154,19 @@ Simplex <<- function(objMat, demMat, supMat){
     
     smallest_pos_TR_ind = GetSmallestPositiveIndex(ph2_tr)
     matrix2 = modifiedGaussJordan(matrix2, smallest_pos_TR_ind, min_index_last)
+    b_sol = getBasicSol(matrix2)
     
+    if (matrix_iterator == 1){
+      big_matrix_iteration = matrix2
+    }else{
+      big_matrix_iteration = rbind(big_matrix_iteration, matrix2)
+    }
+    matrix_iterator = matrix_iterator + 1
     ph2cond = any(matrix2[nrow(matrix2), 1:(ncol(matrix2)-2)] < 0)
   }
   
-  return(list(initial_tableau = init_table, final_matrix = matrix2))
+  print(big_matrix_iteration)
+  return(list(initial_tableau = init_table, final_matrix = matrix2, matrix_iterations = big_matrix_iteration))
 }
 
 modifiedGaussJordan <- function(matrix2, pivot_row, pivot_col){
@@ -161,4 +181,28 @@ modifiedGaussJordan <- function(matrix2, pivot_row, pivot_col){
   }
   
   return(matrix2)
+}
+
+getBasicSol <- function(mat){
+  
+  # check if there is only one cell in column with 1
+  basic_sol = matrix(0, 1, (ncol(mat)-1))
+  colnames(basic_sol) = c("x1", "x2", "x3", "x4", "x5", 
+                         "x6", "x7", "x8", "x9", "x10", 
+                         "x11", "x12", "x13", "x14", "x15", 
+                         "s1", "s2", "s3", "s4", "s5", 
+                         "s6", "s7", "s8", "Z")
+
+  for (i in 1:(ncol(mat)-1)){
+    x_1 = which(mat[,i] == 1)
+    x_0 = which(mat[,i] == 0)
+    
+    # active if there is a single value with 1 and others are 0 
+    if (length(x_1) == 1 && length(x_0) == (nrow(mat)-1) ){
+      # basic solution x_1[1] holds the row index
+      basic_sol[1, i] = mat[x_1[1], ncol(mat)]
+    }
+  }
+  
+  return(basic_sol)
 }
