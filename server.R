@@ -65,7 +65,7 @@ function(input, output) {
     
     values = read.table(input$datafile$datapath, header = TRUE, sep = ",")
     QSIRes <- QuadSpline(values[,1], values[,2], toEstimate)
-    
+    print(QSIRes)
     if (is.null(QSIRes) == TRUE){
       # Some error handling
       return(NULL)
@@ -74,6 +74,7 @@ function(input, output) {
     output = matrix(nrow=1, ncol=2, byrow = TRUE, dimnames = list(c(), c("x", "f(x)")))
     output[1,1] = toEstimate
     output[1,2] = QSIRes$value
+    print(output)
     
     if (input$checkboxPR) return(output)
     else return (NULL)
@@ -142,6 +143,7 @@ function(input, output) {
     supplyMatrix <- as.matrix(hot_to_r(input$simplexInputSupply))
     
     initialTab <- Simplex(supplyMatrix[1:3, 2:6], demandMatrix, supplyMatrix[1:3, 1])
+    print(initialTab$basic_sol)
     return(initialTab$final_matrix)
   })
   
@@ -152,7 +154,7 @@ function(input, output) {
       
       result <- Simplex(supplyMatrix[1:3, 2:6], demandMatrix, supplyMatrix[1:3, 1])
       return(result$initial_tableau)
-    }return (NULL)
+    }else return (NULL)
   })
   
   getSimplexIterations <- eventReactive(input$showIterations, {
@@ -165,6 +167,12 @@ function(input, output) {
   
   output$showFinalTableau <- renderRHandsontable({
     rhandsontable(actionSimplex())
+  })
+  
+  output$simplexIterations <- renderTable({
+    iter_bs <- getSimplexIterations()
+    
+    return(iter_bs)
   })
   
   # output$simplexIterations <- renderUI({
@@ -190,16 +198,16 @@ function(input, output) {
   #   return(fluidRow(all_iters))
   # })
   # 
-  output$simplexIterations2 <- renderUI({
-    iter_bs <- getSimplexIterations()
-    all_iters <- list()
-    
-    for (i in 1:length(iter_bs)){
-      all_iters[[i]] = renderTable(iter_bs[[i]]$tableau)
-    }
-    
-    return(fluidRow(all_iters))
-    
-  })
+  # output$simplexIterations2 <- renderUI({
+  #   iter_bs <- getSimplexIterations()
+  #   all_iters <- list()
+  #   
+  #   for (i in 1:length(iter_bs)){
+  #     all_iters[[i]] = renderTable(iter_bs[[i]]$tableau)
+  #   }
+  #   
+  #   return(fluidRow(all_iters))
+  #   
+  # })
   
 }

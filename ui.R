@@ -81,8 +81,8 @@ fluidPage(
                          br(),
                          tableOutput("SimplexInitial"),
                          br(),
-                         # uiOutput("simplexIterations"),
-                         uiOutput("simplexIterations2"),
+                         uiOutput("simplexIterations"),
+                         # uiOutput("simplexIterations2"),
                          br(),
                          rHandsontableOutput("showFinalTableau")
                        )

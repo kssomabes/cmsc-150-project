@@ -15,7 +15,7 @@ ToSort <- function(var_length, curr_index, matrix){
     while (i <= var_length){
       # print(paste(i, " ", curr_index))
       # print(paste("i: ", i, " curr: ", curr_index))
-      if (abs(matrix[i, curr_index] > max_value)){
+      if (abs(matrix[i, curr_index]) > max_value){
         max_index = i
       }
       
@@ -48,30 +48,30 @@ GaussJordan <- function(matrix){
   
   # pass the number of columns since it will solve that ncol times
   for (i in 1:nrow(matrix)){
+    
+    # pass the number of rows
+    new_i = ToSort(nrow(matrix), i, matrix)
+    
+    # Swap
+    if (new_i != i){
+      matrix = SwapRows(i, new_i, matrix)
+    }
+    
+    # Normalize 
+    matrix[i,] = matrix[i,] / matrix[i, i]
+    
+    # Rows that are not equal to i 
+    for (j in 1:nrow(matrix)){
       
-      # pass the number of rows
-      new_i = ToSort(nrow(matrix), i, matrix)
+      if (i==j) next
+      # print(paste("j: ", j, " i: ", i))
+      valueToBeZero = matrix[j, i]
       
-      # Swap
-      if (new_i != i){
-        matrix = SwapRows(i, new_i, matrix)
-      }
+      subtrahend = matrix[i,] * valueToBeZero 
       
-      # Normalize 
-      matrix[i,] = matrix[i,] / matrix[i, i]
+      matrix[j, ] = matrix[j, ] - subtrahend
       
-      # Rows that are not equal to i 
-      for (j in 1:nrow(matrix)){
-        
-        if (i==j) next
-        # print(paste("j: ", j, " i: ", i))
-        valueToBeZero = matrix[j, i]
-        
-        subtrahend = matrix[i,] * valueToBeZero 
-        
-        matrix[j, ] = matrix[j, ] - subtrahend
-        
-      }
+    }
   }
   
   solutionSet = c(1:ncol(matrix)-1)
@@ -90,7 +90,7 @@ GaussJordan <- function(matrix){
     solutionSet[sol_ind] = matrix[i, RHS]
   }
   
-
+  
   return(list(matrix=matrix, solutionSet=solutionSet))
 }
 
@@ -112,9 +112,9 @@ Gaussian <- function(matrix){
     pivot = matrix[i, i]
     
     j_start = i+1
-  
+    
     for (j in j_start:ncol(matrix)){
-
+      
       # get the value to be 0 
       valueToBeZero = matrix[j, i]
       
